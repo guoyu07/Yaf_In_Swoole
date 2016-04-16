@@ -17,9 +17,9 @@ class HttpServer
 	private $output;
 
 	public function __construct() {
-		$http = new swoole_http_server("127.0.0.1", 9501);
+		$this->http = new swoole_http_server("127.0.0.1", 9501);
 
-		$http->set(
+		$this->http->set(
 			array(
 				'worker_num' => 16,
 				'daemonize' => false,
@@ -28,26 +28,31 @@ class HttpServer
 			)
 		);
 
-		$http->on('WorkerStart' , array( $this , 'onWorkerStart'));
-
-		$http->on('request', function ($request, $response) {
+		$this->http->on('WorkerStart' , array( $this , 'onWorkerStart'));
+		$this->http->on('WorkerStop', array( $this , 'onWorkerStop'));
+		$this->http->on('Close', array( $this , 'onClose'));
+		$this->http->on('request', function ($request, $response) {
 			//prepare Request
 				HttpServer::initRequestQuery($request);
 
 			// TODO handle img
 				$this -> runApplication();
-
 			// prepare response
-				$this -> runResponse($response);
-
+	 			$this -> runResponse($response);
+			// to end worker
+				die();
 		});
 
-		$http->start();
+		$this->http->start();
 	}
 
-	public function onWorkerStart() {
+	public function onWorkerStart($serv,$worker_id) {
 		define('APPLICATION_PATH', dirname(__FILE__));
 		$this->application = new Yaf_Application( APPLICATION_PATH ."/conf/application.ini");
+	}
+	public function onWorkerStop($serv, $worker_id)
+  {
+     echo "WorkerStop[$worker_id]|pid=".posix_getpid().".\n";
 	}
 
 	public function runApplication()
@@ -81,42 +86,42 @@ class HttpServer
 
 	public function runResponse($response)
 	{
-		if(class_exists('Swoole'))
-		{
-			// add Header
-			// $response->header("Content-Type","text/html");
-			if(Swoole::getHeaders())
+			if(class_exists('Swoole'))
 			{
-				$headers = Swoole::getHeaders();
-				foreach ( $headers as $key => $value) {
-						$response->header($key,$value);
+				// add Header
+				// $response->header("Content-Type","text/html");
+				if(Swoole::getHeaders())
+				{
+					$headers = Swoole::getHeaders();
+					foreach ( $headers as $key => $value) {
+							$response->header($key,$value);
+					}
+
+				}
+				// add cookies
+				// $response->cookie("User", "Swoole");
+				if( Swoole::getCookies())
+				{
+					$cookies = Swoole::getCookies();
+					foreach ( $cookies as $cookie) {
+							$response->cookie($cookie['key'],$cookie['value'],$cookie['expire'],$cookie['path'],
+							$cookie['domain'],$cookie['secure'],$cookie['httponly']);
+					}
+				}
+				// set status
+				if(Swoole::getStatus())
+				{
+							$response->status(Swoole::getStatus());
 				}
 
+				Swoole::reset();
 			}
-			// add cookies
-			// $response->cookie("User", "Swoole");
-			if( Swoole::getCookies())
-			{
-				$cookies = Swoole::getCookies();
-				foreach ( $cookies as $cookie) {
-						$response->cookie($cookie['key'],$cookie['value'],$cookie['expire'],$cookie['path'],
-						$cookie['domain'],$cookie['secure'],$cookie['httponly']);
-				}
-			}
-			// set status
-			if(Swoole::getStatus())
-			{
-						$response->status(Swoole::getStatus());
-			}
-
-			Swoole::reset();
-		}
-		$response->end($this->output);
-		unset($this->output);
-
-
-		HttpServer::resetRequest();
+			$response->end($this->output);
+			HttpServer::resetRequest();
 	}
+
+
+
 
 	public static function initRequestQuery($request)
 	{
@@ -156,7 +161,6 @@ class HttpServer
     }
     return self::$instance;
 	}
-
 
 
 }
