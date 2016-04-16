@@ -15,18 +15,20 @@ class IndexController extends Yaf_Controller_Abstract {
 	 */
 	public function indexAction() {
 		// throw new  Exception("Error Processing Request", 1);
+		echo 'hello world!';
 
 		//1. fetch query
-
+		// !SessionRewrite::sessionCheck() && session_start();
+$_SESSION['U'] = 'kasiss';
+// var_dump($_SESSION);
 		//2. fetch model
-// 		$model = new SampleModel();
 
+		//3. set views
 		// $view = $this->getView();
 		// $view->assign('content', 'asdfasdfasdf');
 		// $view->assign('name', 'kasiss');
 		// $view->display("index/index.html");
 
-		//4. render by Yaf, 如果这里返回FALSE, Yaf将不会调用自动视图引擎Render模板
 
 	}
 

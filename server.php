@@ -30,7 +30,6 @@ class HttpServer
 
 		$this->http->on('WorkerStart' , array( $this , 'onWorkerStart'));
 		$this->http->on('WorkerStop', array( $this , 'onWorkerStop'));
-		$this->http->on('Close', array( $this , 'onClose'));
 		$this->http->on('request', function ($request, $response) {
 			//prepare Request
 				HttpServer::initRequestQuery($request);
@@ -39,8 +38,8 @@ class HttpServer
 				$this -> runApplication();
 			// prepare response
 	 			$this -> runResponse($response);
-			// to end worker
-				die();
+				//to end worker
+				$this -> checkReload();
 		});
 
 		$this->http->start();
@@ -52,7 +51,7 @@ class HttpServer
 	}
 	public function onWorkerStop($serv, $worker_id)
   {
-     echo "WorkerStop[$worker_id]|pid=".posix_getpid().".\n";
+    //  echo "WorkerStop[$worker_id]|pid=".posix_getpid().".\n";
 	}
 
 	public function runApplication()
@@ -120,7 +119,14 @@ class HttpServer
 			HttpServer::resetRequest();
 	}
 
-
+	public function checkReload()
+	{
+		$stats = $this->http->stats();
+		if($stats['accept_count']%100 == 0)
+		{
+			$this->http->reload();
+		}
+	}
 
 
 	public static function initRequestQuery($request)

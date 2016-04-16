@@ -42,28 +42,28 @@ class Bootstrap extends Yaf_Bootstrap_Abstract {
 	}
 
 	public function _initRoute(Yaf_Dispatcher $dispatcher) {
-		// $routes = $this->config->routes;
-		// if (!empty($routes) && REQUEST_METHOD != 'CLI' && REQUEST_METHOD != 'SWOOLE')
-		// {
-		// 	$router = $dispatcher->getRouter();
-		// 	$router->addConfig($routes);
-		// }
+		$routes = $this->config->routes;
+		if (!empty($routes) && REQUEST_METHOD != 'CLI' && REQUEST_METHOD != 'SWOOLE')
+		{
+			$router = $dispatcher->getRouter();
+			$router->addConfig($routes);
+		}
 	}
 
 	public function _initDatabase() {
-		// $configs = $this->server_config->mysqli->toArray();
-		// $configs = reset($configs);
-		//
-		// Server::set_maker('MysqliDb');
-		//
-		// if(!$configs) return;
-		//
-		// foreach($configs as $server_name => $config)
-		// {
-		// 	$server = new MysqliDb($config);
-		// 	Server::set($server_name,$server,$config,Server::mysqli);
-		// 	unset($server);
-		// }
+		$configs = $this->server_config->mysqli->toArray();
+		$configs = reset($configs);
+
+		Server::set_maker('MysqliDb');
+
+		if(!$configs) return;
+
+		foreach($configs as $server_name => $config)
+		{
+			$server = new MysqliDb($config);
+			Server::set($server_name,$server,$config,Server::mysqli);
+			unset($server);
+		}
 
 	}
 

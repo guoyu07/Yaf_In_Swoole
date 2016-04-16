@@ -10,12 +10,17 @@ class SwoolePlugin extends Yaf_Plugin_Abstract
 {
   public function routerStartup(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
   {
-    echo 'startup';
   }
 
   public function routerShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response)
   {
-    if(!Yaf_Registry::get("_SU")) return;
+    if(!Yaf_Registry::get("_SU"))
+    {
+      Yaf_Registry::set("_PLUGIN_CHECK",false);
+      return;
+    }else{
+      Yaf_Registry::set("_PLUGIN_CHECK",true);
+    }
 
     //初始化 超全局数组
     $_SU = Yaf_Registry::get("_SU");
@@ -27,6 +32,8 @@ class SwoolePlugin extends Yaf_Plugin_Abstract
     $_COOKIE = $_SU["_COOKIE"];
     $_HEADER = $_SU["_HEADER"];
     $_RAWCONTENT = $_SU["_RAWCONTENT"];
+
+    Yaf_Registry::set("_SU",null);
     // 初始化session
     Yaf_Loader::import(APPLICATION_PATH."/application/library/Swoole/SessionRewrite.php");
     $config = Yaf_Application::app()->getConfig();
@@ -37,7 +44,7 @@ class SwoolePlugin extends Yaf_Plugin_Abstract
 
 
     SessionRewrite::getInstance($session_save_path,$session_name,$session_gc_maxlifetime);
-    !SessionRewrite::sessionCheck() && session_start();
+    // !SessionRewrite::sessionCheck() && session_start();
     if(isset($_COOKIE[$session_name]) && file_exists($session_save_path.'/sess_'.$_COOKIE[$session_name]))
     {
       $sess_data = @file_get_contents($session_save_path.'/sess_'.$_COOKIE[$session_name]);
@@ -49,22 +56,16 @@ class SwoolePlugin extends Yaf_Plugin_Abstract
 
   public function dispatchLoopShutdown(Yaf_Request_Abstract $request, Yaf_Response_Abstract $response) {
 
-    if(!Yaf_Registry::get("_SU")) return;
+    if(!Yaf_Registry::get("_PLUGIN_CHECK")) return;
 
     if(!Swoole::getHeaders())
     {
       Swoole::setHeader("Content-Type","text/html");
       Swoole::setHeader("charset",'utf-8');
     }
-
-    if(!empty($_SESSION) && class_exists('SessionRewrite'))
+    if(!empty($_SESSION) && class_exists('SessionRewrite') && SessionRewrite::sessionCheck())
     {
       $session_name = SessionRewrite::$session_name;
-      // $session_file = SessionRewrite::$session_file;
-      $session_save_path = SessionRewrite::$sess_save_path;
-      $session_id = SessionRewrite::$session_id;
-
-
       $session_id = SessionRewrite::$session_id;
 
       if(!isset($_COOKIE[$session_name]))
@@ -72,7 +73,6 @@ class SwoolePlugin extends Yaf_Plugin_Abstract
         Swoole::setCookie($session_name,$session_id);
         Swoole::setHeader("Set-Cookie","$session_name=$session_id");
       }
-
 
       SessionRewrite::getInstance()->write($session_id,json_encode($_SESSION));
     }
