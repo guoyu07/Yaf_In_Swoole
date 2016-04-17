@@ -121,6 +121,7 @@ class HttpServer
 
 	public function checkReload()
 	{
+		// $this->http->reload();
 		$stats = $this->http->stats();
 		if($stats['accept_count']%100 == 0)
 		{

@@ -54,6 +54,7 @@ class Bootstrap extends Yaf_Bootstrap_Abstract {
 		$configs = $this->server_config->mysqli->toArray();
 		$configs = reset($configs);
 
+		Server::reset(Server::mysqli);
 		Server::set_maker('MysqliDb');
 
 		if(!$configs) return;

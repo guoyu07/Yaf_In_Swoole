@@ -49,8 +49,17 @@ class Server{
     return $server;
   }
 
-	public static function destruct(){
-
+	public static function reset($type=''){
+		if($type)
+		{
+			self::$server_pool[$type] = array();
+			self::$server_maker[$type] = array();
+			self::$server_config[$type] = array();
+			return;
+		}
+		self::$server_pool = array();
+		self::$server_maker = array();
+		self::$server_config = array();
 	}
 
 
