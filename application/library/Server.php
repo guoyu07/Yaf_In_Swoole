@@ -23,7 +23,7 @@ class Server{
        return Server::$server_pool[$type][$server_name];
      }
 
-     if(isset(Server::$server_config[$type][$server_name]) && isset(Server::$server_maker[$type]))
+     if(!isset(Server::$server_config[$type][$server_name]) && isset(Server::$server_maker[$type]))
      {
        return Server::server_maker($server_name,$type);
      }
@@ -31,24 +31,25 @@ class Server{
      return null;
 	}
 
+	//存储服务实例
   public static function set($server_name,$server,$server_config=array(),$type=self::mysqli)
   {
     Server::$server_pool[$type][$server_name] = $server;
     Server::$server_config[$type][$server_name] = $server_config;
   }
-
+//保存实例生成方法
   public static function set_maker($origin_obj_name,$type=self::mysqli)
   {
     Server::$server_maker[$type] = $origin_obj_name;
   }
-
+// 生成并保存实例
   private static function server_maker($server_name,$type)
   {
     $server = new Server::$server_maker[$type](Server::$server_config[$type][$server_name]);
     Server::$server_pool[$type][$server_name] =$server;
     return $server;
   }
-
+//清空数据库实例
 	public static function reset($type=''){
 		if($type)
 		{

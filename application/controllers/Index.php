@@ -14,20 +14,21 @@ class IndexController extends Yaf_Controller_Abstract {
 	 * 对于如下的例子, 当访问http://yourhost/sample/index/index/index/name/chenzhidong 的时候, 你就会发现不同
 	 */
 	public function indexAction() {
-		// throw new  Exception("Error Processing Request", 1);
-		echo 'hello world!';
 
-		//1. fetch query
+
+		// fetch query
 		// !SessionRewrite::sessionCheck() && session_start();
-$_SESSION['U'] = 'kasiss';
-// var_dump($_SESSION);
-		//2. fetch model
+		// $_SESSION['U'] = 'kasiss';
 
+		// fetch model
+			$data = DemoModel::getUsers();
+
+			$single = reset($data);
 		//3. set views
-		// $view = $this->getView();
-		// $view->assign('content', 'asdfasdfasdf');
-		// $view->assign('name', 'kasiss');
-		// $view->display("index/index.html");
+		$view = $this->getView();
+		$view->assign('content', $single['email']);
+		$view->assign('name', 'kasiss');
+		$view->display("index/index.html");
 
 
 	}
