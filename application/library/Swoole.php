@@ -9,6 +9,7 @@ class Swoole
   private static $headers = array();
   private static $cookies = array();
   private static $status = 200;
+  private static $plugins = array();
 
   public static function setHeader($key,$value)
   {
@@ -61,6 +62,20 @@ class Swoole
     self::$status = 200;
     return true;
   }
+
+   public static function setPlugin($plugin_name)
+  {
+    self::$plugins[$plugin_name] = 1;
+  }
+  public static function getPlugin($plugin_name='')
+  {
+    if($plugin_name)
+    {
+      return isset(self::$plugins[$plugin_name]) ? true : false;
+    }
+    return array_keys(self::$plugins);
+  }
+
 
 
 
