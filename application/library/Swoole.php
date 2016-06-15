@@ -78,7 +78,19 @@ class Swoole
 
 
 
+  public static function setPlugin($plugin_name)
+  {
+    self::$plugins[$plugin_name] = 1;
+  }
 
+  public static function getPlugin($plugin_name='')
+  {
+    if($plugin_name)
+    {
+      return isset(self::$plugins[$plugin_name]) ? true : false;
+    }
+    return array_keys(self::$plugins);
+  }
 
 
 
